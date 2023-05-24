@@ -254,9 +254,15 @@ header {
 
 }
 
+#Game{
+  background-color: #000;
+  
+}
+
 #contact h1 {
     color: #fff;
     margin-bottom: 50px;
+    padding-top: 100px;
 }
 
 form {
@@ -349,4 +355,126 @@ footer{
     background-color: #fff;
     opacity: 80%;
 }
+  
+canvas {
+  background: #000;
+  display: block;
+  margin: 0 auto;
+  border: 5px solid white;
+}
+
+#contact .container{
+    background-color: #000;
+}
+
+@media only screen and (max-width: 768px) {
+  /* Set header styles for smaller screens */
+  header {
+  padding: 10px;
+  }
+  
+  header h1 {
+  font-size: 24px;
+  }
+  
+  nav ul {
+  flex-direction: column;
+  align-items: center;
+  }
+  
+  nav ul li {
+  margin: 10px 0;
+  }
+  
+  /* Set owner section styles for smaller screens */
+  #owner {
+  padding: 50px;
+  flex-direction: column;
+  align-items: center;
+  }
+  
+  .owner-info img {
+  padding-top: 10vh;
+  max-width: 150px;
+  margin-bottom: 10px;
+  }
+  
+  .owner-info h2 {
+  font-size: 24px;
+  margin-bottom: 5px;
+  }
+  
+  .owner-info p {
+  font-size: 12px;
+  margin-bottom: 10px;
+  }
+  
+  .salon-description h2 {
+  font-size: 24px;
+  margin-bottom: 10px;
+  text-align: center;
+  }
+  
+  .salon-description p {
+  font-size: 16px;
+  text-align: center;
+  }
+  
+  /* Set services section styles for smaller screens */
+  #services {
+  padding: 30px;
+  }
+  
+  #services h2 {
+  font-size: 24px;
+  margin-bottom: 10px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  }
+  
+  #services ul {
+  flex-direction: column;
+  }
+  
+  #services li {
+  margin: 10px 0;
+  max-width: none;
+  }
+  
+  #services img {
+  max-width: 100%;
+  }
+  
+  #services h3 {
+  font-size: 20px;
+  margin-top: 10px;
+  margin-bottom: 5px;
+  }
+  
+  /* Set gallery section styles for smaller screens */
+  #gallery h2 {
+  font-size: 24px;
+  margin-bottom: 20px;
+  padding-top: 10px;
+  }
+
+
+  }
+
+  
+  @media only screen and (max-width: 800px) {
+    /* Resize the canvas to fit the width of the screen */
+    canvas {
+      width: 100%;
+      height: 100%;
+    }
+  
+    /* Move the game text to the center of the screen */
+    #gameText {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+  }
   
