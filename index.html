@@ -85,11 +85,328 @@
                 </div>
               </div>
             </div>
+
           </section>
+
+          <section id="Game">
+            <div class="container">
+                canvas {
+                    background: #000;
+                    display: block;
+                    margin: 0 auto;
+                  }
+               
+                <canvas id="gameCanvas" width="800" height="600"></canvas>
+                <div id="gameText" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; color: #fff; font-size: 24px; font-family: Arial;"></div>
+                <script>
+                  // Set up the game canvas
+                  const canvas = document.getElementById("gameCanvas");
+                  const context = canvas.getContext("2d");
+            
+                  // Game variables
+                  let playerSize = 50;
+                  let playerX = canvas.width / 2 - playerSize / 2;
+                  let playerY = canvas.height - playerSize - 10;
+                  let playerSpeed = 5;
+                  let asteroidSize = 50;
+                  let asteroidSpeed = 2;
+                  let asteroids = [];
+                  let powerUpRadius = 15;
+                  let powerUpSpeed = 4;
+                  let powerUps = [];
+                  let score = 0;
+                  let level = 1;
+                  let highScore = 0;
+                  let isLevelUp = false;
+                  let levelUpTimer = 0;
+                  let levelUpDuration = 7 * 60; // 7 seconds at 60 FPS
+                  let isFrozen = false;
+                  let freezeTimer = 0;
+                  let freezeDuration = 7 * 60; // 7 seconds at 60 FPS
+                  let isGameOver = false;
+                  let isPlaying = false;
+            
+                  // Image objects
+                  const backgroundImage = new Image();
+                  backgroundImage.src = "gamebackground.jpg";
+                  const asteroidImage = new Image();
+                  asteroidImage.src = "asteroid2.png";
+                  const playerImage = new Image();
+                  playerImage.src = "maincharecter.png";
+            
+                  // Generate random number within a range
+                  function getRandomNumber(min, max) {
+                    return Math.random() * (max - min) + min;
+                  }
+            
+                  // Reset the game
+                  function resetGame() {
+                    playerX = canvas.width / 2 - playerSize / 2;
+                    playerY = canvas.height - playerSize - 10;
+                    asteroids = [];
+                    powerUps = [];
+                    score = 0;
+                    level = 1;
+                    isFrozen = false;
+                    isGameOver = false;
+                    asteroidSpeed = 3;
+                  }
+            
+                  // Generate new power-ups
+                  function generatePowerUps() {
+                    if (powerUps.length < 3 && Math.random() < 0.01) {
+                      const powerUpX = getRandomNumber(0, canvas.width - powerUpRadius * 2);
+                      const powerUpY = -powerUpRadius;
+                      powerUps.push({
+                        x: powerUpX,
+                        y: powerUpY,
+                        radius: powerUpRadius,
+                      });
+                    }
+                  }
+            
+                  // Increase level and asteroid speed
+                  function increaseLevel() {
+                    level++;
+                    asteroidSpeed += 3;
+                    isLevelUp = true;
+                    levelUpTimer = levelUpDuration;
+                    isFrozen = true;
+                    freezeTimer = freezeDuration;
+                  }
+            
+                  // Handle player movement
+                  function handlePlayerMovement() {
+                    if (!isFrozen) {
+                      if (keys[37] && playerX > 0) {
+                        // Left arrow key
+                        playerX -= playerSpeed;
+                      }
+                      if (keys[39] && playerX < canvas.width - playerSize) {
+                        // Right arrow key
+                        playerX += playerSpeed;
+                      }
+                    }
+                  }
+            
+                  // Check collision between two circles
+                  function checkCollision(circle1, circle2) {
+                    const dx = circle1.x - circle2.x;
+                    const dy = circle1.y - circle2.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    return distance < circle1.radius + circle2.radius;
+                  }
+            
+                  // Update the game state
+                  function update() {
+                    // Player movement
+                    handlePlayerMovement();
+            
+                    // Update asteroid positions
+                    for (let i = 0; i < asteroids.length; i++) {
+                      const asteroid = asteroids[i];
+                      asteroid.y += asteroidSpeed;
+            
+                      // Collision detection with player
+                      if (
+                        asteroid.y + asteroidSize >= playerY &&
+                        playerX <= asteroid.x &&
+                        asteroid.x <= playerX + playerSize
+                      ) {
+                        // Game over
+                        if (score > highScore) {
+                          highScore = score;
+                        }
+                        isGameOver = true;
+                      }
+            
+                      // Remove asteroids that have moved off the screen
+                      if (asteroid.y > canvas.height) {
+                        asteroids.splice(i, 1);
+                        i--;
+                      }
+                    }
+            
+                    // Update power-up positions
+                    for (let i = 0; i < powerUps.length; i++) {
+                      const powerUp = powerUps[i];
+                      powerUp.y += powerUpSpeed;
+            
+                      // Collision detection with player
+                      if (
+                        powerUp.y + powerUp.radius >= playerY &&
+                        playerX <= powerUp.x &&
+                        powerUp.x <= playerX + playerSize
+                      ) {
+                        // Increase score and check for level increase
+                        score++;
+                        if (score % 20 === 0 && score / 20 >= level) {
+                          increaseLevel();
+                        }
+                        powerUps.splice(i, 1);
+                        i--;
+                      }
+            
+                      // Remove power-ups that have moved off the screen
+                      if (powerUp.y > canvas.height) {
+                        powerUps.splice(i, 1);
+                        i--;
+                      }
+                    }
+            
+                    // Generate new asteroids
+                    if (asteroids.length < 10 && Math.random() < 0.02) {
+                      const asteroidX = getRandomNumber(0, canvas.width - asteroidSize);
+                      const asteroidY = -asteroidSize;
+                      asteroids.push({ x: asteroidX, y: asteroidY, size: asteroidSize });
+                    }
+            
+                    // Generate new power-ups
+                    generatePowerUps();
+            
+                    // Update the display
+                    context.clearRect(0, 0, canvas.width, canvas.height);
+                    context.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
+            
+                    if (!isPlaying) {
+                      context.fillStyle = "#fff";
+                      context.font = "19px Arial";
+                      context.fillText("Press 'P' to start the game", canvas.width / 3, canvas.height / 2);
+                      context.fillText("level increases whenever player score multiple of 20 and when levelling up player's", canvas.width / 16, canvas.height / 2 + 60);
+                      context.fillText(" movement will freeze for few seconds and can still be out when hit by asteroid", canvas.width / 12, canvas.height / 2 + 90);
+                      return;
+                    }
+            
+                    if (isLevelUp) {
+                      levelUpTimer--;
+                      if (levelUpTimer <= 0) {
+                        isLevelUp = false;
+                      }
+                    }
+            
+                    if (isFrozen) {
+                      freezeTimer--;
+                      if (freezeTimer <= 0) {
+                        isFrozen = false;
+                      }
+                    }
+            
+                    // Draw asteroids
+                    for (const asteroid of asteroids) {
+                      context.drawImage(
+                        asteroidImage,
+                        asteroid.x,
+                        asteroid.y,
+                        asteroid.size,
+                        asteroid.size
+                      );
+                    }
+            
+                    // Draw player
+                    context.drawImage(playerImage, playerX, playerY, playerSize, playerSize);
+            
+                    // Draw power-ups
+                    for (const powerUp of powerUps) {
+                      context.fillStyle = "#f00";
+                      context.beginPath();
+                      context.arc(
+                        powerUp.x + powerUp.radius,
+                        powerUp.y + powerUp.radius,
+                        powerUp.radius,
+                        0,
+                        Math.PI * 2
+                      );
+                      context.closePath();
+                      context.fill();
+                    }
+            
+                    // Draw game text
+                    context.fillStyle = "#fff";
+                    context.font = "24px Arial";
+                    context.fillText("Score: " + score, 10, 30);
+                    context.fillText("Level: " + level, 10, 60);
+                    context.fillText("High Score: " + highScore, 10, 90);
+            
+                    if (isLevelUp) {
+                      context.fillText("Level Up!", canvas.width / 2, canvas.height / 2);
+                    }
+            
+                    if (isFrozen) {
+                      context.fillText("Frozen!", canvas.width / 2, canvas.height / 2);
+                    }
+            
+                    // Game over screen
+                    if (isGameOver) {
+                      context.fillStyle = "rgba(0, 0, 0, 0.5)";
+                      context.fillRect(0, 0, canvas.width, canvas.height);
+                      context.fillStyle = "#fff";
+                      context.font = "48px Arial";
+                      context.fillText(
+                        "Game Over",
+                        canvas.width / 2,
+                        canvas.height / 2 - 30
+                      );
+                      context.font = "24px Arial";
+                      context.fillText(
+                        "Score: " + score,
+                        canvas.width / 2,
+                        canvas.height / 2 + 20
+                      );
+                      context.fillText(
+                        "High Score: " + highScore,
+                        canvas.width / 2,
+                        canvas.height / 2 + 60
+                      );
+            
+                      context.fillText(
+                        "press Enter to play again",
+                        canvas.width / 2,
+                        canvas.height / 2 + 100
+                      );
+            
+                      // Replay game on Enter key press
+                      if (keys[13]) {
+                        resetGame();
+                        isPlaying = true;
+                        update();
+                      }
+                    } else {
+                      requestAnimationFrame(update);
+                    }
+                  }
+            
+                  // Handle keyboard input
+                  const keys = {};
+                  document.addEventListener("keydown", (event) => {
+                    keys[event.keyCode] = true;
+            
+                    // Start the game on Enter key press
+                    if (event.keyCode === 13 && isGameOver) {
+                      resetGame();
+                      isPlaying = true;
+                      update();
+                    }
+            
+                    // Start the game on P key press
+                    if (event.keyCode === 80 && !isPlaying) {
+                      isPlaying = true;
+                      update();
+                    }
+                  });
+                  document.addEventListener("keyup", (event) => {
+                    delete keys[event.keyCode];
+                  });
+            
+                  // Start the game
+                  update();
+                </script>
+            </div>
+        </section>       
           
                
             <section id="contact">
                 <div class="container">
+                    
                     <h1>Contact Me</h1>
                     <form action="#" method="post">
                         <label for="name">Name:</label>
@@ -124,3 +441,4 @@
             <p>&copy; 2023 Gaurab. All rights reserved.</p>
         </div>
     </footer>
+
